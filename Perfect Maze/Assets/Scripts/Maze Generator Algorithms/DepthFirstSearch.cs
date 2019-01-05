@@ -5,6 +5,7 @@ using UnityEngine;
 public class DepthFirstSearch : MonoBehaviour
 {
     public GameObject wall;
+    public Camera mainCamera;
     public int xSize = 5;
     public int ySize = 5;
     
@@ -43,6 +44,7 @@ public class DepthFirstSearch : MonoBehaviour
     void Start()
     {
         CreateWalls();
+        mainCamera = Camera.main;
     }
 
     void CreateWalls()
@@ -95,16 +97,17 @@ public class DepthFirstSearch : MonoBehaviour
         //Assigns walls to cells
         for (int cellProcess = 0; cellProcess < cells.Length; cellProcess++)
         {
+            if (termCount == xSize)
+            {
+                eastWestProcess++;
+                termCount = 0;
+            }
+
             cells[cellProcess] = new Cell();
             cells[cellProcess].east = allWalls[eastWestProcess];
             cells[cellProcess].south = allWalls[childProcess+(xSize+1)*ySize];
-            if (termCount == xSize)
-            {
-                eastWestProcess += 2;
-                termCount = 0;
-            }
-            else
-                eastWestProcess++;
+                   
+            eastWestProcess++;
             termCount++;
             childProcess++;
 
@@ -112,11 +115,12 @@ public class DepthFirstSearch : MonoBehaviour
             cells[cellProcess].north = allWalls[(childProcess + (xSize + 1) * ySize)+xSize-1];
         }
         CreateMaze();
+        AdjustCamera();
     }
 
     void CreateMaze()
     {
-        if(visitedCells < totalCells)
+        while(visitedCells < totalCells)
         {
             if(startedBuilding)
             {
@@ -141,10 +145,7 @@ public class DepthFirstSearch : MonoBehaviour
                 visitedCells++;
                 startedBuilding = true;
             }
-
-            Invoke("CreateMaze", 0.0f);
-
-            Debug.Log("Finished!");
+             Debug.Log("Finished!");
         }
     }
 
@@ -226,6 +227,19 @@ public class DepthFirstSearch : MonoBehaviour
                 currentCell = lastCells[backingUp];
                 backingUp--;
             }
+        }
+    }
+
+    void AdjustCamera()//Changes camera distance based on the width/length of the maze. Camera distance is equal to maze size so it only requires an incremental increase.
+    {
+        if (xSize > ySize)
+        {
+            // X and Z get hardcoded values because these need to remain constant.
+            mainCamera.transform.position = new Vector3(0, xSize, -0.5f);
+        }
+        else
+        {
+            mainCamera.transform.position = new Vector3(0, ySize, -0.5f);
         }
     }
 }
