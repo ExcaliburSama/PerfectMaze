@@ -7,15 +7,20 @@ public class DepthFirstSearch : MonoBehaviour
     public GameObject wall;
     public int xSize = 5;
     public int ySize = 5;
-    public int currentCell;
+    
 
-    private int eastWestProcess;
-    private int childProcess;
-    private int termCount;
-    private int neighbourLength;
+    private bool startedBuilding = false;
+    private int currentCell = 0;
+    private int eastWestProcess = 0;
+    private int childProcess = 0;
+    private int termCount = 0;
     private int neighbourCheck;
-    private int[] neighbours = new int [4];
+    private int currentNeighbour;
     private int totalCells;
+    private int visitedCells;
+    private int backingUp;
+    private int wallToBreak;
+    private List<int> lastCells;
     private float wallSpace = 1.0f;
     private Vector3 initialPos;
     private Vector3 myPos;
@@ -29,10 +34,10 @@ public class DepthFirstSearch : MonoBehaviour
     public class Cell
     {
         public bool visited;
-        public GameObject north;
-        public GameObject east;
-        public GameObject west;
-        public GameObject south;
+        public GameObject north;    //1
+        public GameObject east;     //2
+        public GameObject west;     //3
+        public GameObject south;    //4
     }
 
     void Start()
@@ -74,6 +79,9 @@ public class DepthFirstSearch : MonoBehaviour
 
     void CreateCells ()
     {
+        lastCells = new List<int>();
+        lastCells.Clear ();
+        totalCells = xSize * ySize;
         int children = wallHolder.transform.childCount;
         allWalls = new GameObject[children];
         cells = new Cell[xSize * ySize];
@@ -108,12 +116,55 @@ public class DepthFirstSearch : MonoBehaviour
 
     void CreateMaze()
     {
-        GiveMeNeighbour();
+        if(visitedCells < totalCells)
+        {
+            if(startedBuilding)
+            {
+                GiveMeNeighbour();
+                if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)
+                {
+                    BreakWall();
+                    cells[currentNeighbour].visited = true;
+                    visitedCells++;
+                    lastCells.Add(currentCell);
+                    currentCell = currentNeighbour;
+                    if (lastCells.Count > 0)
+                    {
+                        backingUp = lastCells.Count - 1;
+                    }
+                }
+            }
+            else
+            {
+                currentCell = Random.Range(0, totalCells);
+                cells[currentCell].visited = true;
+                visitedCells++;
+                startedBuilding = true;
+            }
+
+            Invoke("CreateMaze", 0.0f);
+
+            Debug.Log("Finished!");
+        }
+    }
+
+    void BreakWall()
+    {
+        switch (wallToBreak)
+        {
+            case 1: Destroy(cells[currentCell].north); break;
+            case 2: Destroy(cells[currentCell].east); break;
+            case 3: Destroy(cells[currentCell].west); break;
+            case 4: Destroy(cells[currentCell].south); break;
+        }
     }
 
     void GiveMeNeighbour()
     {
-        totalCells = xSize * ySize;
+        int neighbourLength = 0;
+        int[] neighbours = new int[4];
+        int[] connectingWall = new int[4];
+
         neighbourCheck = ((currentCell + 1) / xSize);
         neighbourCheck -= 1;
         neighbourCheck *= xSize;
@@ -125,6 +176,7 @@ public class DepthFirstSearch : MonoBehaviour
             if (cells[currentCell+1].visited == false)
             {
                 neighbours[neighbourLength] = currentCell + 1;
+                connectingWall[neighbourLength] = 3;
                 neighbourLength++;
             }
         }
@@ -135,6 +187,7 @@ public class DepthFirstSearch : MonoBehaviour
             if (cells[currentCell - 1].visited == false)
             {
                 neighbours[neighbourLength] = currentCell - 1;
+                connectingWall[neighbourLength] = 2;
                 neighbourLength++;
             }
         }
@@ -145,6 +198,7 @@ public class DepthFirstSearch : MonoBehaviour
             if (cells[currentCell + xSize].visited == false)
             {
                 neighbours[neighbourLength] = currentCell+xSize;
+                connectingWall[neighbourLength] = 1;
                 neighbourLength++;
             }
         }
@@ -155,13 +209,23 @@ public class DepthFirstSearch : MonoBehaviour
             if (cells[currentCell - xSize].visited == false)
             {
                 neighbours[neighbourLength] = currentCell - xSize;
+                connectingWall[neighbourLength] = 4;
                 neighbourLength++;
             }
         }
-        for (int i = 0; i < neighbourLength; i++)
+        if (neighbourLength != 0)
         {
-            Debug.Log(neighbours[i]);
+            int chosenCell = Random.Range(0, neighbourLength);
+            currentNeighbour = neighbours[chosenCell];
+            wallToBreak = connectingWall[chosenCell];
         }
-
+        else
+        {
+            if (backingUp > 0)
+            {
+                currentCell = lastCells[backingUp];
+                backingUp--;
+            }
+        }
     }
 }
