@@ -11,6 +11,7 @@ public class DepthFirstSearch : MonoBehaviour
     
 
     private bool startedBuilding = false;
+    private bool containsWalls = false;
     private int currentCell = 0;
     private int eastWestProcess = 0;
     private int childProcess = 0;
@@ -29,6 +30,7 @@ public class DepthFirstSearch : MonoBehaviour
     private Cell[] cells;
     private GameObject tempWall;
     private GameObject wallHolder;
+    [SerializeField]
     private GameObject[] allWalls;
     
     [System.Serializable]
@@ -43,15 +45,51 @@ public class DepthFirstSearch : MonoBehaviour
 
     void Start()
     {
-        CreateWalls();
         mainCamera = Camera.main;
+
+        wallHolder = new GameObject();
+        lastCells = new List<int>();
+        wallHolder.name = "Maze";
     }
 
-    void CreateWalls()
+    public void CreateWalls()
     {
-        wallHolder = new GameObject();
-        wallHolder.name = "Maze";
 
+        Debug.Log("making walls");
+        
+        if (containsWalls)
+        {
+            foreach (GameObject walls in allWalls)
+            {
+                Destroy(walls.gameObject);
+                Debug.Log("walls removed");
+            }
+
+            //visitedCells;
+            currentCell = 0;
+            eastWestProcess = 0;
+            childProcess = 0;
+            termCount = 0;
+            neighbourCheck = 0;
+            currentNeighbour = 0;
+            totalCells = 0;
+            startedBuilding = false;
+            backingUp = 0;
+            //wallToBreak = 0;
+
+            Destroy(wallHolder.gameObject);
+            lastCells.Clear();
+            //Destroy(cells);
+           //Destroy(allWalls[]);
+
+            wallHolder = new GameObject();
+            wallHolder.name = "Maze";
+            //Destroy(wallHolder);
+            //wallHolder = new GameObject();
+            //wallHolder.name = "Maze";
+            containsWalls = false;
+        }
+        totalCells = xSize * ySize;
         initialPos = new Vector3((-xSize / 2) + wallSpace / 2, 0.0f, (-ySize / 2) + wallSpace / 2);
         myPos = initialPos;
 
@@ -81,12 +119,13 @@ public class DepthFirstSearch : MonoBehaviour
 
     void CreateCells ()
     {
-        lastCells = new List<int>();
+        Debug.Log("creating cells");
         lastCells.Clear ();
-        totalCells = xSize * ySize;
+        
         int children = wallHolder.transform.childCount;
         allWalls = new GameObject[children];
-        cells = new Cell[xSize * ySize];
+        cells = new Cell[0];
+        cells = new Cell[totalCells];
 
         //Gets all child objects in wallHolder
         for (int i = 0; i < children; i++)
@@ -97,6 +136,7 @@ public class DepthFirstSearch : MonoBehaviour
         //Assigns walls to cells
         for (int cellProcess = 0; cellProcess < cells.Length; cellProcess++)
         {
+            Debug.Log("Assigning walls to cells");
             if (termCount == xSize)
             {
                 eastWestProcess++;
@@ -120,10 +160,12 @@ public class DepthFirstSearch : MonoBehaviour
 
     void CreateMaze()
     {
+        Debug.Log("creating maze");
         while(visitedCells < totalCells)
         {
-            if(startedBuilding)
+            if (startedBuilding)
             {
+                Debug.Log("started building");
                 GiveMeNeighbour();
                 if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)
                 {
@@ -147,10 +189,14 @@ public class DepthFirstSearch : MonoBehaviour
             }
              Debug.Log("Finished!");
         }
+        visitedCells = 0;
+        Debug.Log("Last stone set");
+        //Invoke("CreateMaze", 0.0f);
     }
 
     void BreakWall()
     {
+        Debug.Log("Destroying wall");
         switch (wallToBreak)
         {
             case 1: Destroy(cells[currentCell].north); break;
@@ -158,10 +204,12 @@ public class DepthFirstSearch : MonoBehaviour
             case 3: Destroy(cells[currentCell].west); break;
             case 4: Destroy(cells[currentCell].south); break;
         }
+        containsWalls = true;
     }
 
     void GiveMeNeighbour()
     {
+        Debug.Log("Checking for neighbours");
         int neighbourLength = 0;
         int[] neighbours = new int[4];
         int[] connectingWall = new int[4];
