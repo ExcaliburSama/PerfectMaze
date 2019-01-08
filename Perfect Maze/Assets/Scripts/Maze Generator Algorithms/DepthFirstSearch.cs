@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// DepthFirstSearch Algorithm, Builds a grid of walls after which walls get assigned cells and a random cell is taken as starting point to create maze.
@@ -10,8 +11,8 @@ public class DepthFirstSearch : MonoBehaviour
 {
     public GameObject wall;
     public Camera mainCamera;
-    public int xSize = 5;
-    public int ySize = 5;
+    public Text xSizeInput;
+    public Text ySizeInput;
 
     [SerializeField]
     private bool realTimeGeneration = true;
@@ -22,7 +23,8 @@ public class DepthFirstSearch : MonoBehaviour
     private Vector3 initialPos, myPos;
     private GameObject tempWall, wallHolder;
     private bool startedBuilding = false, containsMaze = false;
-    private int currentCell, eastWestValue, childProcess, termCount, neighbourCheck, currentNeighbour, totalCells, visitedCells, backingUp, wallToBreak, defCamDis = 10;
+    private int currentCell, eastWestValue, childProcess, termCount, neighbourCheck, currentNeighbour, totalCells, visitedCells, backingUp, wallToBreak, defCamDis = 10,
+                xSize, ySize;
 
     public class Cell
     {
@@ -42,12 +44,20 @@ public class DepthFirstSearch : MonoBehaviour
         wallHolder.name = "Maze";
     }
 
+    public void ToggleRealtime()
+    {
+        realTimeGeneration = !realTimeGeneration;
+    }
+
     public void CreateWalls()//Creates initial 'grid' of walls based on the x and y size, stores all these walls within the "wallHolder" gameObject.
     { 
         if (containsMaze)//Checks if there already is a maze within the scene, if so it calls upon Init() to scrub the scene.
         {
             Init();
         }
+
+        int.TryParse(xSizeInput.text, out xSize);
+        int.TryParse(ySizeInput.text, out ySize);
 
         totalCells = xSize * ySize;
         initialPos = new Vector3((-xSize / 2) + wallSpace / 2, 0.0f, (-ySize / 2) + wallSpace / 2);
@@ -276,21 +286,22 @@ public class DepthFirstSearch : MonoBehaviour
         if (xSize > ySize)
         {
             // X and Z get hardcoded values because these need to remain constant.
-            mainCamera.transform.position = new Vector3(0, xSize, -0.5f);
+            mainCamera.transform.position = new Vector3(0, xSize+2, 0.3f);
         }
         else
         {
-            mainCamera.transform.position = new Vector3(0, ySize, -0.5f);
+            mainCamera.transform.position = new Vector3(0, ySize+2, 0.3f);
         }
 
         if (xSize <= defCamDis && ySize <= defCamDis)//Minimal distance of camera must remain 10, otherwise the camera zooms in too far on the maze, showing only a fraction of its totality
         {
-            mainCamera.transform.position = new Vector3(0, defCamDis, -0.5f);
+            mainCamera.transform.position = new Vector3(0, defCamDis+2, 0.3f);
         }
     }
 
     private void Init()//Returns certain values to default to allow the maze to be regenerated multiple times within a single runtime.
     {
+        currentCell = 0;
         visitedCells = 0;
         eastWestValue = 0;
         childProcess = 0;
