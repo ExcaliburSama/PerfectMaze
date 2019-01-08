@@ -540,8 +540,6 @@ MonoBehaviour:
   mainCamera: {fileID: 534669904}
   xSize: 10
   ySize: 10
-  cells: []
-  allWalls: []
 --- !u!4 &1834356338
 Transform:
   m_ObjectHideFlags: 0

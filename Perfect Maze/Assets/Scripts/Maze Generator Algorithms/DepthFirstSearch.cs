@@ -13,6 +13,8 @@ public class DepthFirstSearch : MonoBehaviour
     public int xSize = 5;
     public int ySize = 5;
 
+    [SerializeField]
+    private bool realTimeGeneration = true;
     private Cell[] cells;
     private GameObject[] allWalls;
     private List<int> lastCells;
@@ -20,7 +22,7 @@ public class DepthFirstSearch : MonoBehaviour
     private Vector3 initialPos, myPos;
     private GameObject tempWall, wallHolder;
     private bool startedBuilding = false, containsMaze = false;
-    private int currentCell, eastWestProcess, childProcess, termCount, neighbourCheck, currentNeighbour, totalCells, visitedCells, backingUp, wallToBreak, defCamDis = 10;
+    private int currentCell, eastWestValue, childProcess, termCount, neighbourCheck, currentNeighbour, totalCells, visitedCells, backingUp, wallToBreak, defCamDis = 10;
 
     public class Cell
     {
@@ -93,54 +95,92 @@ public class DepthFirstSearch : MonoBehaviour
         {
             if (termCount == xSize)
             {
-                eastWestProcess++;
+                eastWestValue++;
                 termCount = 0;
             }
 
             cells[cellProcess] = new Cell();
-            cells[cellProcess].east = allWalls[eastWestProcess];
+            cells[cellProcess].east = allWalls[eastWestValue];
             cells[cellProcess].south = allWalls[childProcess+(xSize+1)*ySize];
                    
-            eastWestProcess++;
+            eastWestValue++;
             termCount++;
             childProcess++;
 
-            cells[cellProcess].west = allWalls[eastWestProcess];
+            cells[cellProcess].west = allWalls[eastWestValue];
             cells[cellProcess].north = allWalls[(childProcess + (xSize + 1) * ySize)+xSize-1];
         }
 
-        CreateMaze();
+        if (realTimeGeneration)
+        {
+            CreateMazeRealTime();
+        }
+        else
+        {
+            CreateMazeInstant();
+        }
+        
         AdjustCamera();
     }
 
-    void CreateMaze()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze.
+    void CreateMazeRealTime()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze.
+    {
+        if(visitedCells < totalCells)
+        {
+            if (startedBuilding)
+            {
+                GiveMeNeighbour();//Checks neighbouring cells so the algorithm knows from where to remove walls next.
+                if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)//checks if the algorithm has already been through the current cell 
+                {
+                    CheckCells();
+                }
+            }
+            else
+            {
+                AssignStartingCell();
+            }
+            Invoke("CreateMazeRealTime", 0.0f);
+        }
+    }
+
+    void CreateMazeInstant()
     {
         while(visitedCells < totalCells)
         {
             if (startedBuilding)
             {
                 GiveMeNeighbour();//Checks neighbouring cells so the algorithm knows from where to remove walls next.
-                if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)//checks if the algorithm has already been through the current cell
-                {                                                                                  //runs through the wall breaking process and moves onto the next cell.
-                    BreakWall();
-                    cells[currentNeighbour].visited = true;
-                    visitedCells++;
-                    lastCells.Add(currentCell);
-                    currentCell = currentNeighbour;
-                    if (lastCells.Count > 0)
-                    {
-                        backingUp = lastCells.Count - 1;
-                    }
+                if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)//checks if the algorithm has already been through the current cell 
+                {
+                    CheckCells();
                 }
             }
-            else//Assigns a random cell as starting point for the maze creating process.
+            else
             {
-                currentCell = Random.Range(0, totalCells);
-                cells[currentCell].visited = true;
-                visitedCells++;
-                startedBuilding = true;
+                AssignStartingCell();
             }
         }
+    }
+
+    void CheckCells()
+    {                                                                      
+        BreakWall();
+        cells[currentNeighbour].visited = true;
+        visitedCells++;
+        lastCells.Add(currentCell);
+        currentCell = currentNeighbour;
+        if (lastCells.Count > 0)
+        {
+            backingUp = lastCells.Count - 1;
+        }
+    }
+
+    void AssignStartingCell()
+    {
+        currentCell = Random.Range(0, totalCells);
+        cells[currentCell].visited = true;
+        visitedCells++;
+        startedBuilding = true;
     }
 
     void BreakWall()//Destroys walls based on given case value.
@@ -243,7 +283,7 @@ public class DepthFirstSearch : MonoBehaviour
             mainCamera.transform.position = new Vector3(0, ySize, -0.5f);
         }
 
-        if (xSize <= defCamDis || ySize <= defCamDis)//Minimal distance of camera must remain 10, otherwise the camera zooms in too far on the maze, showing only a fraction of its totality
+        if (xSize <= defCamDis && ySize <= defCamDis)//Minimal distance of camera must remain 10, otherwise the camera zooms in too far on the maze, showing only a fraction of its totality
         {
             mainCamera.transform.position = new Vector3(0, defCamDis, -0.5f);
         }
@@ -252,7 +292,7 @@ public class DepthFirstSearch : MonoBehaviour
     private void Init()//Returns certain values to default to allow the maze to be regenerated multiple times within a single runtime.
     {
         visitedCells = 0;
-        eastWestProcess = 0;
+        eastWestValue = 0;
         childProcess = 0;
         termCount = 0;
         startedBuilding = false;
