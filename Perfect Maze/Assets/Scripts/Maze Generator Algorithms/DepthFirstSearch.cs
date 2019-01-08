@@ -130,7 +130,7 @@ public class DepthFirstSearch : MonoBehaviour
             CreateMazeInstant();
         }
         
-        AdjustCamera();
+       AdjustCamera();
     }
 
     void CreateMazeRealTime()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze.
