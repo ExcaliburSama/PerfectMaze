@@ -2,38 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// DepthFirstSearch Algorithm, Builds a grid of walls after which walls get assigned cells and a random cell is taken as starting point to create maze.
+/// </summary>
+
 public class DepthFirstSearch : MonoBehaviour
 {
     public GameObject wall;
     public Camera mainCamera;
     public int xSize = 5;
     public int ySize = 5;
-    
 
-    private bool startedBuilding = false;
-    private bool containsWalls = false;
-    private int currentCell = 0;
-    private int eastWestProcess = 0;
-    private int childProcess = 0;
-    private int termCount = 0;
-    private int neighbourCheck;
-    private int currentNeighbour;
-    private int totalCells;
-    private int visitedCells;
-    private int backingUp;
-    private int wallToBreak;
+    private Cell[] cells;
+    private GameObject[] allWalls;
     private List<int> lastCells;
     private float wallSpace = 1.0f;
-    private Vector3 initialPos;
-    private Vector3 myPos;
-    [SerializeField]
-    private Cell[] cells;
-    private GameObject tempWall;
-    private GameObject wallHolder;
-    [SerializeField]
-    private GameObject[] allWalls;
-    
-    [System.Serializable]
+    private Vector3 initialPos, myPos;
+    private GameObject tempWall, wallHolder;
+    private bool startedBuilding = false, containsMaze = false;
+    private int currentCell, eastWestProcess, childProcess, termCount, neighbourCheck, currentNeighbour, totalCells, visitedCells, backingUp, wallToBreak, defCamDis = 10;
+
     public class Cell
     {
         public bool visited;
@@ -52,48 +40,18 @@ public class DepthFirstSearch : MonoBehaviour
         wallHolder.name = "Maze";
     }
 
-    public void CreateWalls()
-    {
-
-        Debug.Log("making walls");
-        
-        if (containsWalls)
+    public void CreateWalls()//Creates initial 'grid' of walls based on the x and y size, stores all these walls within the "wallHolder" gameObject.
+    { 
+        if (containsMaze)//Checks if there already is a maze within the scene, if so it calls upon Init() to scrub the scene.
         {
-            foreach (GameObject walls in allWalls)
-            {
-                Destroy(walls.gameObject);
-                Debug.Log("walls removed");
-            }
-
-            //visitedCells;
-            currentCell = 0;
-            eastWestProcess = 0;
-            childProcess = 0;
-            termCount = 0;
-            neighbourCheck = 0;
-            currentNeighbour = 0;
-            totalCells = 0;
-            startedBuilding = false;
-            backingUp = 0;
-            //wallToBreak = 0;
-
-            Destroy(wallHolder.gameObject);
-            lastCells.Clear();
-            //Destroy(cells);
-           //Destroy(allWalls[]);
-
-            wallHolder = new GameObject();
-            wallHolder.name = "Maze";
-            //Destroy(wallHolder);
-            //wallHolder = new GameObject();
-            //wallHolder.name = "Maze";
-            containsWalls = false;
+            Init();
         }
+
         totalCells = xSize * ySize;
         initialPos = new Vector3((-xSize / 2) + wallSpace / 2, 0.0f, (-ySize / 2) + wallSpace / 2);
         myPos = initialPos;
 
-        //used to create the walls on the X axis of the maze
+        //Used to create the walls on the X axis of the maze.
         for (int i = 0; i < ySize; i++)
         {
             for (int j = 0; j <= xSize; j++)
@@ -104,7 +62,7 @@ public class DepthFirstSearch : MonoBehaviour
             }
         }
 
-        //used to create the walls on the Y axis of the maze
+        //Used to create the walls on the Y axis of the maze.
         for (int i = 0; i <= ySize; i++)
         {
             for (int j = 0; j < xSize; j++)
@@ -117,11 +75,8 @@ public class DepthFirstSearch : MonoBehaviour
         CreateCells();
     }
 
-    void CreateCells ()
-    {
-        Debug.Log("creating cells");
-        lastCells.Clear ();
-        
+    void CreateCells ()//Creates and stores cells out of walls, the algorithm later uses this to check which walls need to be removed to create a 'maze'.
+    {   
         int children = wallHolder.transform.childCount;
         allWalls = new GameObject[children];
         cells = new Cell[0];
@@ -133,10 +88,9 @@ public class DepthFirstSearch : MonoBehaviour
             allWalls[i] = wallHolder.transform.GetChild(i).gameObject;
         }
 
-        //Assigns walls to cells
+        //Assigns walls to cells by checking each wall from left to right and assigning their respective cardinal point.
         for (int cellProcess = 0; cellProcess < cells.Length; cellProcess++)
         {
-            Debug.Log("Assigning walls to cells");
             if (termCount == xSize)
             {
                 eastWestProcess++;
@@ -154,21 +108,20 @@ public class DepthFirstSearch : MonoBehaviour
             cells[cellProcess].west = allWalls[eastWestProcess];
             cells[cellProcess].north = allWalls[(childProcess + (xSize + 1) * ySize)+xSize-1];
         }
+
         CreateMaze();
         AdjustCamera();
     }
 
-    void CreateMaze()
+    void CreateMaze()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze.
     {
-        Debug.Log("creating maze");
         while(visitedCells < totalCells)
         {
             if (startedBuilding)
             {
-                Debug.Log("started building");
-                GiveMeNeighbour();
-                if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)
-                {
+                GiveMeNeighbour();//Checks neighbouring cells so the algorithm knows from where to remove walls next.
+                if (cells[currentNeighbour].visited == false && cells[currentCell].visited == true)//checks if the algorithm has already been through the current cell
+                {                                                                                  //runs through the wall breaking process and moves onto the next cell.
                     BreakWall();
                     cells[currentNeighbour].visited = true;
                     visitedCells++;
@@ -180,23 +133,18 @@ public class DepthFirstSearch : MonoBehaviour
                     }
                 }
             }
-            else
+            else//Assigns a random cell as starting point for the maze creating process.
             {
                 currentCell = Random.Range(0, totalCells);
                 cells[currentCell].visited = true;
                 visitedCells++;
                 startedBuilding = true;
             }
-             Debug.Log("Finished!");
         }
-        visitedCells = 0;
-        Debug.Log("Last stone set");
-        //Invoke("CreateMaze", 0.0f);
     }
 
-    void BreakWall()
+    void BreakWall()//Destroys walls based on given case value.
     {
-        Debug.Log("Destroying wall");
         switch (wallToBreak)
         {
             case 1: Destroy(cells[currentCell].north); break;
@@ -204,16 +152,19 @@ public class DepthFirstSearch : MonoBehaviour
             case 3: Destroy(cells[currentCell].west); break;
             case 4: Destroy(cells[currentCell].south); break;
         }
-        containsWalls = true;
+        containsMaze = true;//set to true so that script knows to scrub scene when next "CreateWalls()" is called.
     }
 
-    void GiveMeNeighbour()
+    void GiveMeNeighbour()  //Checks neighbouring cells so that the algorithm knows which cells to visit next, prevents it from going out of bounds
+                            //or unnecessarily removing multiple walls from a single cell.
     {
-        Debug.Log("Checking for neighbours");
+        //Values are instantiated becuase the script throws an 'out of index array' error if instantiated elsewhere.
         int neighbourLength = 0;
         int[] neighbours = new int[4];
-        int[] connectingWall = new int[4];
+        int[] connectingWall = new int[4];//assigned bassed on walls cardinal point, BreakWall() uses this to know which wall to remove from a cell.
 
+        //Value used to ensure nothing is removed from the outer walls of the maze, calculation is simply to make sure the neighbouring cells checked stay within
+        //the outer limits of the maze. 
         neighbourCheck = ((currentCell + 1) / xSize);
         neighbourCheck -= 1;
         neighbourCheck *= xSize;
@@ -262,7 +213,9 @@ public class DepthFirstSearch : MonoBehaviour
                 neighbourLength++;
             }
         }
-        if (neighbourLength != 0)
+
+        if (neighbourLength != 0)//initializes the first wallBreak on a random position and from there checks which walls need to be broken
+                                 //next based on the 'chosenCell'.
         {
             int chosenCell = Random.Range(0, neighbourLength);
             currentNeighbour = neighbours[chosenCell];
@@ -270,7 +223,7 @@ public class DepthFirstSearch : MonoBehaviour
         }
         else
         {
-            if (backingUp > 0)
+            if (backingUp > 0)//Used to return to previous cells in case multiple walls need to be removed from a singel cell.
             {
                 currentCell = lastCells[backingUp];
                 backingUp--;
@@ -289,5 +242,26 @@ public class DepthFirstSearch : MonoBehaviour
         {
             mainCamera.transform.position = new Vector3(0, ySize, -0.5f);
         }
+
+        if (xSize <= defCamDis || ySize <= defCamDis)//Minimal distance of camera must remain 10, otherwise the camera zooms in too far on the maze, showing only a fraction of its totality
+        {
+            mainCamera.transform.position = new Vector3(0, defCamDis, -0.5f);
+        }
+    }
+
+    private void Init()//Returns certain values to default to allow the maze to be regenerated multiple times within a single runtime.
+    {
+        visitedCells = 0;
+        eastWestProcess = 0;
+        childProcess = 0;
+        termCount = 0;
+        startedBuilding = false;
+        lastCells.Clear();
+
+        Destroy(wallHolder.gameObject);
+
+        wallHolder = new GameObject();
+        wallHolder.name = "Maze";
+        containsMaze = false;
     }
 }
