@@ -16,7 +16,8 @@ public class DepthFirstSearch : MonoBehaviour
 
     [SerializeField]
     private bool realTimeGeneration = true;
-    private Cell[] cells;
+
+    public Cell[] cells;
     private GameObject[] allWalls;
     private List<int> lastCells;
     private float wallSpace = 1.0f;
