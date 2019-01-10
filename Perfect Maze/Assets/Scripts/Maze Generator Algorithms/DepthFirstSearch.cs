@@ -293,14 +293,14 @@ public class DepthFirstSearch : MonoBehaviour
         if (xSize > ySize)
         {
             // X and Z get hardcoded values because these need to remain constant.
-            mainCamera.transform.position = new Vector3(0, xSize+2, xSize * 0.1f/1.5f);
+            mainCamera.transform.position = new Vector3(0, xSize+8, xSize * 0.1f/1.5f);
         }
         else
         {
-            mainCamera.transform.position = new Vector3(0, ySize+2, ySize * 0.1f/1.5f);
+            mainCamera.transform.position = new Vector3(0, ySize+8, ySize * 0.1f/1.5f);
         }
 
-        if (xSize <= defCamDis && ySize <= defCamDis)//Minimal distance of camera must remain 10, otherwise the camera zooms in too far on the maze, showing only a fraction of its totality
+        if (xSize < defCamDis && ySize < defCamDis)//Minimal distance of camera must remain 10, otherwise the camera zooms in too far on the maze, showing only a fraction of its totality
         {
             mainCamera.transform.position = new Vector3(0, defCamDis+2, 0.5f);
         }
