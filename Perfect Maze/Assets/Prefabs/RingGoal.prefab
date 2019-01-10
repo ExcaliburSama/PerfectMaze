@@ -18742,6 +18742,7 @@ GameObject:
   - component: {fileID: 6514682622797906713}
   - component: {fileID: 4641048977183895943}
   - component: {fileID: 766188602358307199}
+  - component: {fileID: 1387785640}
   m_Layer: 0
   m_Name: RingGoal
   m_TagString: goal
@@ -23462,6 +23463,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1387785640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6915764661155847031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bc380835a9b19a4a8dd7f54e395c7e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mazeGenerator: {fileID: 0}
+  marbleCreator: {fileID: 0}
 --- !u!1 &8134633056874127992
 GameObject:
   m_ObjectHideFlags: 0
