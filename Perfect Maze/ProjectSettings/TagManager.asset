@@ -6,6 +6,7 @@ TagManager:
   tags:
   - mazegenerator
   - marble
+  - goal
   layers:
   - Default
   - TransparentFX
