@@ -58,6 +58,7 @@ public class DepthFirstSearch : MonoBehaviour
             Init();
         }
 
+        //converts the input in the inputfield into intergers the algorithm can use.
         int.TryParse(xSizeInput.text, out xSize);
         int.TryParse(ySizeInput.text, out ySize);
 
@@ -70,8 +71,9 @@ public class DepthFirstSearch : MonoBehaviour
         {
             for (int j = 0; j <= xSize; j++)
             {
+                //Using the initialpos as starting point this makes multiple rows of walls corresponding the xSize given.
                 myPos = new Vector3(initialPos.x + (j*wallSpace)-wallSpace/2, 0.0f, initialPos.z + (i * wallSpace)-wallSpace/2);
-                tempWall = Instantiate(wall, myPos, Quaternion.identity);
+                tempWall = Instantiate(wall, myPos, Quaternion.identity);//sets all walls in a temporary gameobject before adding them to their final container, prevents issues with references.
                 tempWall.transform.parent = wallHolder.transform;
             }
         }
@@ -81,6 +83,7 @@ public class DepthFirstSearch : MonoBehaviour
         {
             for (int j = 0; j < xSize; j++)
             {
+                //Using the initialpos as starting point this makes multiple columns of walls corresponding the ySize given.
                 myPos = new Vector3(initialPos.x + (j * wallSpace), 0.0f, initialPos.z + (i * wallSpace) - wallSpace);
                 tempWall = Instantiate(wall, myPos, Quaternion.Euler(0.0f, 90.0f, 0.0f));
                 tempWall.transform.parent = wallHolder.transform;
@@ -111,6 +114,8 @@ public class DepthFirstSearch : MonoBehaviour
                 termCount = 0;
             }
 
+            //checks each wall within wallHolder and assigns them a cardinal point depending on their position in the list, which for every four walls creates a cell. cells are later checked 
+            //and get certain walls removed to create the 'maze'.
             cells[cellProcess] = new Cell();
             cells[cellProcess].east = allWalls[eastWestValue];
             cells[cellProcess].south = allWalls[childProcess+(xSize+1)*ySize];
@@ -135,7 +140,7 @@ public class DepthFirstSearch : MonoBehaviour
        AdjustCamera();
     }
 
-    void CreateMazeRealTime()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze.
+    void CreateMazeRealTime()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze, in realtime.
     {
         if(visitedCells < totalCells)
         {
@@ -155,7 +160,7 @@ public class DepthFirstSearch : MonoBehaviour
         }
     }
 
-    void CreateMazeInstant()
+    void CreateMazeInstant()//Checks each cell one by one and removes a wall from the correpsonding cell to create a maze, instantly.... depending on how big the maze is.
     {
         while(visitedCells < totalCells)
         {
@@ -275,7 +280,7 @@ public class DepthFirstSearch : MonoBehaviour
         }
         else
         {
-            if (backingUp > 0)//Used to return to previous cells in case multiple walls need to be removed from a singel cell.
+            if (backingUp > 0)//Used to backtrack cells once the outer border is hit. 
             {
                 currentCell = lastCells[backingUp];
                 backingUp--;
