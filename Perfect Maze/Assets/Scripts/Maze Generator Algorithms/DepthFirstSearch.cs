@@ -13,6 +13,8 @@ public class DepthFirstSearch : MonoBehaviour
     public Camera mainCamera;
     public Text xSizeInput;
     public Text ySizeInput;
+    public Vector3 myPos, initialPos;
+    public int totalCells;
 
     [SerializeField]
     private bool realTimeGeneration = true;
@@ -21,10 +23,9 @@ public class DepthFirstSearch : MonoBehaviour
     private GameObject[] allWalls;
     private List<int> lastCells;
     private float wallSpace = 1.0f;
-    private Vector3 initialPos, myPos;
     private GameObject tempWall, wallHolder;
     private bool startedBuilding = false, containsMaze = false;
-    private int currentCell, eastWestValue, childProcess, termCount, neighbourCheck, currentNeighbour, totalCells, visitedCells, backingUp, wallToBreak, defCamDis = 10,
+    private int currentCell, eastWestValue, childProcess, termCount, neighbourCheck, currentNeighbour, visitedCells, backingUp, wallToBreak, defCamDis = 10,
                 xSize, ySize;
 
     public class Cell
@@ -41,8 +42,8 @@ public class DepthFirstSearch : MonoBehaviour
         mainCamera = Camera.main;
 
         wallHolder = new GameObject();
-        lastCells = new List<int>();
         wallHolder.name = "Maze";
+        lastCells = new List<int>();
     }
 
     public void ToggleRealtime()
@@ -81,7 +82,7 @@ public class DepthFirstSearch : MonoBehaviour
             for (int j = 0; j < xSize; j++)
             {
                 myPos = new Vector3(initialPos.x + (j * wallSpace), 0.0f, initialPos.z + (i * wallSpace) - wallSpace);
-                tempWall = Instantiate(wall, myPos, Quaternion.Euler(0.0f, 90.0f, 0.0f)) as GameObject;
+                tempWall = Instantiate(wall, myPos, Quaternion.Euler(0.0f, 90.0f, 0.0f));
                 tempWall.transform.parent = wallHolder.transform;
             }
         }

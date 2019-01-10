@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SphereManager : MonoBehaviour
+public class BallMovement : MonoBehaviour
 {
-
     public float speed;
 
     private Rigidbody rb;
